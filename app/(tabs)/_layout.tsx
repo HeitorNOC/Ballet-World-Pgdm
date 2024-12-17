@@ -37,6 +37,10 @@ export default function TabLayout() {
         name="auth/resetPassword"
         options={{title: 'reset', tabBarStyle: { display: 'none' }, href: null}} /> 
 
+      <Tabs.Screen
+        name="profile"
+        options={{title: 'profile', tabBarStyle: { display: 'none' }, href: null}} /> 
+
     </Tabs>
   );
 }
