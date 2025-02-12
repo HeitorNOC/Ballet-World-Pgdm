@@ -221,7 +221,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, backgroundColor: "#FDEAE2", padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20, marginTop: 15 },
   backButton: { justifyContent: "center", alignItems: "center" },
   headerTitle: { fontSize: 18, fontWeight: "bold", color: "#6E4F3A" },
   logo: { width: 40, height: 40, resizeMode: "contain" },

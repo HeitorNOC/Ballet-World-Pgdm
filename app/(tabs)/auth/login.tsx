@@ -28,7 +28,7 @@ export default function LoginScreen() {
         <Text style={styles.link}>Esqueci minha senha</Text>
       </TouchableOpacity>
 {/* retirar no profile dps daqui pfv */}
-      <TouchableOpacity style={styles.button} onPress={() => { router.navigate('../profile')}}> 
+      <TouchableOpacity style={styles.button} onPress={() => { router.navigate('../welcome')}}> 
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
   
