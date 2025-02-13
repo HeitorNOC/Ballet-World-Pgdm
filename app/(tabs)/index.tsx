@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const WelcomeScreen = () => {
   const router = useRouter()
@@ -9,12 +9,12 @@ const WelcomeScreen = () => {
     <View style={styles.container}>
       <Text style={styles.header}>World Ballet</Text>
       <Image
-        source={require('../../assets/images/logo_ballet_world.png')}
+        source={require('@/assets/images/logo_ballet_world.png')}
         style={styles.image}
       />
       <Text style={styles.welcomeText}>Bem Vindo!</Text>
       <Text style={styles.description}>
-         World Ballet: o palco perfeito para o seu ballet!
+        World Ballet: o palco perfeito para o seu ballet!
       </Text>
       <TouchableOpacity
         style={styles.button}
@@ -32,13 +32,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FDEAE2', 
+    backgroundColor: '#FDEAE2',
     padding: 20,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#781A1A', 
+    color: '#781A1A',
     marginBottom: 20,
   },
   image: {

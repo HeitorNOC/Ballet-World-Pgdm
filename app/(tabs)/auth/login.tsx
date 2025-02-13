@@ -1,6 +1,6 @@
-import { Image, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
-import React from 'react';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
 export default function LoginScreen() {
@@ -12,7 +12,7 @@ export default function LoginScreen() {
 
       <View>
         <Image
-          source={require('../../../assets/images/logo_ballet_world.png')}
+          source={require('@/assets/images/logo_ballet_world.png')}
           style={styles.image}
         />
       </View>
@@ -24,15 +24,15 @@ export default function LoginScreen() {
         placeholderTextColor="#D9BCA7"
         secureTextEntry
       />
-      <TouchableOpacity onPress={() => { router.navigate('/auth/resetPassword')}}>
+      <TouchableOpacity onPress={() => { router.navigate('/auth/resetPassword') }}>
         <Text style={styles.link}>Esqueci minha senha</Text>
       </TouchableOpacity>
-{/* retirar no profile dps daqui pfv */}
-      <TouchableOpacity style={styles.button} onPress={() => { router.navigate('../welcome')}}> 
+      {/* retirar no profile dps daqui pfv */}
+      <TouchableOpacity style={styles.button} onPress={() => { router.navigate('../welcome') }}>
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
-  
-      <TouchableOpacity style={[styles.button, styles.createButton]} onPress={() => { router.navigate('/auth/signUp');}}>
+
+      <TouchableOpacity style={[styles.button, styles.createButton]} onPress={() => { router.navigate('/auth/signUp'); }}>
         <Text style={styles.buttonText}>Criar Conta</Text>
       </TouchableOpacity>
     </View>

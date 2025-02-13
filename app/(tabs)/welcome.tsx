@@ -1,14 +1,14 @@
-import React from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  TouchableOpacity,
-  ScrollView
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -29,12 +29,17 @@ export default function HomeScreen() {
     router.push("../update");
   };
 
+  // Função para ir para a tela de História
+  const goToHistory = () => {
+    router.push("../history");
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Bem-vindo(a)!</Text>
         <Image
-          source={require("../../assets/images/logo_ballet_world.png")}
+          source={require("@/assets/images/logo_ballet_world.png")}
           style={styles.logo}
         />
       </View>
@@ -60,6 +65,12 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.menuItem} onPress={goToProfile}>
           <Ionicons name="person-circle-outline" size={36} color="#6E4F3A" />
           <Text style={styles.menuText}>Perfil</Text>
+        </TouchableOpacity>
+
+        {/* Novo item para acessar a História */}
+        <TouchableOpacity style={styles.menuItem} onPress={goToHistory}>
+          <Ionicons name="book-outline" size={36} color="#6E4F3A" />
+          <Text style={styles.menuText}>História</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

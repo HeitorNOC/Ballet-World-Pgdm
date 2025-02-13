@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ForgetPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -10,19 +10,20 @@ export default function ForgetPasswordScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => {
-            router.navigate('./login')}}
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            router.navigate('./login')
+          }}
         >
-        <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
-      </TouchableOpacity>
+          <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
+        </TouchableOpacity>
 
 
         <Text style={styles.headerTitle}>RECUPERAR SENHA</Text>
         <Image
-          source={require('../../../assets/images/logo_ballet_world.png')}
+          source={require('@/assets/images/logo_ballet_world.png')}
           style={styles.logo}
         />
       </View>
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     color: '#6E4F3A',
     fontWeight: 'bold',
     marginBottom: 5,
-    marginTop: 20, 
+    marginTop: 20,
   },
   input: {
     backgroundColor: '#EED3C3',
@@ -91,15 +92,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     height: 40,
     color: '#6E4F3A',
-    marginBottom: 20, 
+    marginBottom: 20,
   },
   button: {
     backgroundColor: '#5C2E2E',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 50, 
-    marginTop: 30, 
+    height: 50,
+    marginTop: 30,
   },
   buttonText: {
     color: '#FFF',

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import CheckBox from 'expo-checkbox';
-import { ScrollView } from 'react-native'; 
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignUpScreen() {
   const [isAluno, setIsAluno] = useState(false);
@@ -24,7 +23,7 @@ export default function SignUpScreen() {
 
         <Text style={styles.headerTitle}>CADASTRO</Text>
         <Image
-          source={require('../../../assets/images/logo_ballet_world.png')}
+          source={require('@/assets/images/logo_ballet_world.png')}
           style={styles.logo}
         />
       </View>

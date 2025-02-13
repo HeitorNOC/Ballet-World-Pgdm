@@ -1,19 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  TextInput,
+  Alert,
+  Image,
   Modal,
   Pressable,
   ScrollView,
-  Image,
-  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -55,7 +55,7 @@ export default function ProfileScreen() {
     }
     setIsEditing(!isEditing)
   }
-  
+
   const handleSaveCode = () => {
     setUserData({ ...userData, teacherCode: newCode });
     setModalVisible(false);
@@ -124,7 +124,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
         <Image
-          source={require("../../assets/images/logo_ballet_world.png")}
+          source={require("@/assets/images/logo_ballet_world.png")}
           style={styles.logo}
         />
       </View>

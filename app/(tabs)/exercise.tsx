@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  Image
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 type Treino = {
   id: string;
@@ -60,7 +60,7 @@ export default function TreinoScreen() {
         </TouchableOpacity>
         <Text style={styles.title}>Treino</Text>
         <Image
-          source={require("../../assets/images/logo_ballet_world.png")}
+          source={require("@/assets/images/logo_ballet_world.png")}
           style={styles.logo}
         />
       </View>
@@ -82,8 +82,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   header: {
-    flexDirection: "row", 
-    alignItems: "center", 
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     marginBottom: 20,
