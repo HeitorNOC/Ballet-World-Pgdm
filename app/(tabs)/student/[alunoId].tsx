@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image
-} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function AlunoDetailScreen() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function AlunoDetailScreen() {
   }, [alunoId]);
 
   const goBack = () => {
-    router.push("/(tabs)/student");
+    router.push("../student");
   };
 
   return (
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   header: {
-    flexDirection: "row", 
-    alignItems: "center", 
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     marginBottom: 20,

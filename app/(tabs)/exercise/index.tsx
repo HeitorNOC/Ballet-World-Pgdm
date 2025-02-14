@@ -1,59 +1,106 @@
+// app/exercise/index.tsx (Exemplo com expo-router)
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-type Treino = {
+// Definição do tipo Circuito (com steps)
+type Step = {
+  id: string;
+  image: any;         // require(...) da imagem
+  description: string;
+  duration: number;   // duração em segundos
+};
+type Circuit = {
   id: string;
   title: string;
-  duration: string;
+  duration: string;   // Ex. "10 min"
+  image: any;         // Imagem ilustrativa do circuito
+  steps: Step[];
 };
 
 export default function TreinoScreen() {
   const router = useRouter();
-  const [treinos, setTreinos] = useState<Treino[]>([]);
+  const [circuits, setCircuits] = useState<Circuit[]>([]);
 
   useEffect(() => {
-    // Mock de treinos
-    const mockTreinos: Treino[] = [
-      { id: "1", title: "Aquecimento Básico", duration: "10 min" },
-      { id: "2", title: "Alongamento", duration: "15 min" },
-      { id: "3", title: "Barra Inicial", duration: "20 min" },
+    // Simulamos 3 circuitos, cada um com steps diferentes
+    const mockCircuits: Circuit[] = [
+      {
+        id: "1",
+        title: "Circuito Básico",
+        duration: "10 min",
+        image: require("@/assets/images/image_ballet_1.png"),
+        steps: [
+          {
+            id: "step1",
+            image: require("@/assets/images/image_ballet_1.png"),
+            description: "Aquecer e preparar braços.",
+            duration: 5,
+          },
+          {
+            id: "step2",
+            image: require("@/assets/images/image_ballet_1.png"),
+            description: "Exercício de ponta em primeira posição.",
+            duration: 5,
+          },
+          {
+            id: "step3",
+            image: require("@/assets/images/image_ballet_1.png"),
+            description: "Alongamento final.",
+            duration: 5,
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "Alongamento",
+        duration: "15 min",
+        image: require("@/assets/images/imagem_materia.png"),
+        steps: [
+          // ...
+        ],
+      },
+      {
+        id: "3",
+        title: "Barra Inicial",
+        duration: "20 min",
+        image: require("@/assets/images/cisne_negro.png"),
+        steps: [
+          // ...
+        ],
+      },
     ];
-    setTreinos(mockTreinos);
+    setCircuits(mockCircuits);
   }, []);
 
+  // Ao voltar, vamos para a tela de "welcome"
   const goBack = () => {
-    router.push("/(tabs)/welcome");
+    router.push("../welcome");
   };
 
-  const handleStartTreino = (id: string) => {
-    console.log("Iniciando treino:", id);
+  // Quando clica em "Entrar", vamos à tela de detalhes do circuito
+  const goToCircuitDetail = (circuitId: string) => {
+    router.push(`../exercise/${circuitId}`);
   };
 
-  const renderTreino = ({ item }: { item: Treino }) => (
+  const renderCircuit = ({ item }: { item: Circuit }) => (
     <View style={styles.treinoItem}>
       <Text style={styles.treinoTitle}>{item.title}</Text>
       <Text style={styles.treinoDuration}>Duração: {item.duration}</Text>
       <TouchableOpacity
         style={styles.startButton}
-        onPress={() => handleStartTreino(item.id)}
+        onPress={() => goToCircuitDetail(item.id)}
       >
         <Ionicons name="play-circle-outline" size={24} color="#FFF" />
-        <Text style={styles.startButtonText}>Iniciar</Text>
+        <Text style={styles.startButtonText}>Entrar</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Cabeçalho */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
@@ -66,9 +113,9 @@ export default function TreinoScreen() {
       </View>
 
       <FlatList
-        data={treinos}
+        data={circuits}
         keyExtractor={(item) => item.id}
-        renderItem={renderTreino}
+        renderItem={renderCircuit}
         style={styles.list}
       />
     </View>

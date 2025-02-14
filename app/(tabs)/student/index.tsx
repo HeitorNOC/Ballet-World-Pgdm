@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  FlatList, 
-  Image
-} from "react-native";
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 type Aluno = {
   id: string;
@@ -30,7 +30,7 @@ export default function AlunosScreen() {
   }, []);
 
   const goBack = () => {
-    router.push("/(tabs)/welcome");
+    router.push("../welcome");
   };
 
   const goToAlunoDetail = (alunoId: string) => {
@@ -38,8 +38,8 @@ export default function AlunosScreen() {
   };
 
   const renderItem = ({ item }: { item: Aluno }) => (
-    <TouchableOpacity 
-      style={styles.alunoItem} 
+    <TouchableOpacity
+      style={styles.alunoItem}
       onPress={() => goToAlunoDetail(item.id)}
     >
       <Ionicons name="person-outline" size={24} color="#6E4F3A" />
@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   header: {
-    flexDirection: "row", 
-    alignItems: "center", 
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     marginBottom: 20,

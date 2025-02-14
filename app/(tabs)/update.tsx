@@ -30,7 +30,7 @@ export default function UpdatesScreen() {
   }, []);
 
   const goBack = () => {
-    router.push("/(tabs)/welcome");
+    router.push("../welcome");
   };
 
   const renderUpdate = ({ item }: { item: UpdateItem }) => (

@@ -1,10 +1,9 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors'
-import { useColorScheme } from '@/hooks/useColorScheme'
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Tabs } from 'expo-router';
+import React from 'react';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,35 +11,57 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        // Esconde a barra de abas globalmente
+        tabBarStyle: { display: 'none' },
+
+        // Se ainda quiser manter comportamentos personalizados,
+        // deixe-os aqui. Mas a barra ficará invisível.
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen name="index" options={{title: 'Home', tabBarStyle: { display: 'none' },  href: null}}/>
-        
+        // Ajuste para iOS se precisar
+        // tabBarStyle: Platform.select({
+        //   ios: { position: 'absolute', display: 'none' },
+        //   default: { display: 'none' },
+        // }),
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="auth/login"
-        options={{title: 'Login', tabBarStyle: { display: 'none' }, href: null}} />
-
+        options={{
+          title: 'Login',
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="auth/signUp"
-        options={{title: 'signUp', tabBarStyle: { display: 'none' }, href: null}} /> 
-
+        options={{
+          title: 'signUp',
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="auth/resetPassword"
-        options={{title: 'reset', tabBarStyle: { display: 'none' }, href: null}} /> 
-
+        options={{
+          title: 'reset',
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="profile"
-        options={{title: 'profile', tabBarStyle: { display: 'none' }, href: null}} /> 
-
+        options={{
+          title: 'profile',
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
