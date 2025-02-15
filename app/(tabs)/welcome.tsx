@@ -1,80 +1,98 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
+import { Ionicons } from "@expo/vector-icons"
+import { useRouter } from "expo-router"
+import React from "react"
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
-} from "react-native";
+} from "react-native"
+import { useDecodedToken } from "@/hooks/useDecodeToken"
 
 export default function HomeScreen() {
-  const router = useRouter();
+  const router = useRouter()
+  const { decoded, loading } = useDecodedToken()
 
-  const goToProfile = () => {
-    router.push("../profile");
-  };
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Carregando...</Text>
+      </View>
+    )
+  }
 
-  const goToAlunos = () => {
-    router.push("../student");
-  };
+  if (!decoded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Usuário não logado!</Text>
+      </View>
+    )
+  }
 
-  const goToTreino = () => {
-    router.push("../exercise");
-  };
+  function goToDashboard() {
+    if (decoded && decoded.userType === "admin") {
+      router.push("../dashboard/admin")
+    } else if (decoded && decoded.userType === "professor") {
+      router.push("../dashboard/professor")
+    } else if (decoded && decoded.userType === "student") {
+      router.push("../dashboard/student")
+    }
+  }
 
-  const goToUpdates = () => {
-    router.push("../update");
-  };
+  const menuItems = []
 
-  // Função para ir para a tela de História
-  const goToHistory = () => {
-    router.push("../history");
-  };
+  if (decoded.userType === "student") {
+    menuItems.push(
+      { label: "Treinos", icon: "play-outline", onPress: () => router.push("../exercise/student") },
+      { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
+      { label: "História", icon: "book-outline", onPress: () => router.push("../history") },
+      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") }
+    )
+  } else if (decoded.userType === "professor") {
+    menuItems.push(
+      { label: "Meus Alunos", icon: "people-outline", onPress: () => router.push("../student") },
+      { label: "Criar/Editar Treinos", icon: "create-outline", onPress: () => router.push("../exercise/professor") },
+      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") },
+      { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
+      { label: "História", icon: "book-outline", onPress: () => router.push("../history") }
+    )
+  } else if (decoded.userType === "admin") {
+    menuItems.push(
+      { label: "Gerenciar Usuários", icon: "people-outline", onPress: () => router.push("../admin/users") },
+      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") },
+      { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
+      { label: "História", icon: "book-outline", onPress: () => router.push("../history") }
+    )
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Bem-vindo(a)!</Text>
+        <Text style={styles.title}>Bem-vindo(a), {decoded.email}!</Text>
         <Image
           source={require("@/assets/images/logo_ballet_world.png")}
           style={styles.logo}
         />
       </View>
-
       <Text style={styles.subtitle}>O que deseja fazer hoje?</Text>
-
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem} onPress={goToTreino}>
-          <Ionicons name="play-outline" size={36} color="#6E4F3A" />
-          <Text style={styles.menuText}>Treinos</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={goToAlunos}>
-          <Ionicons name="people-outline" size={36} color="#6E4F3A" />
-          <Text style={styles.menuText}>Alunos</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={goToUpdates}>
-          <Ionicons name="notifications-outline" size={36} color="#6E4F3A" />
-          <Text style={styles.menuText}>Updates</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem} onPress={goToProfile}>
-          <Ionicons name="person-circle-outline" size={36} color="#6E4F3A" />
-          <Text style={styles.menuText}>Perfil</Text>
-        </TouchableOpacity>
-
-        {/* Novo item para acessar a História */}
-        <TouchableOpacity style={styles.menuItem} onPress={goToHistory}>
-          <Ionicons name="book-outline" size={36} color="#6E4F3A" />
-          <Text style={styles.menuText}>História</Text>
+        {menuItems.map((item, index) => (
+          <TouchableOpacity key={index} style={styles.menuItem} onPress={item.onPress}>
+            <Ionicons name={item.icon as any} size={36} color="#6E4F3A" />
+            <Text style={styles.menuText}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity style={styles.menuItem} onPress={goToDashboard}>
+          <Ionicons name="stats-chart-outline" size={36} color="#6E4F3A" />
+          <Text style={styles.menuText}>Dashboard</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -85,6 +103,12 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     alignItems: "center",
     justifyContent: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#FDEAE2",
+    alignItems: "center",
+    justifyContent: "center"
   },
   header: {
     display: "flex",
@@ -128,4 +152,4 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: "bold",
   },
-});
+})

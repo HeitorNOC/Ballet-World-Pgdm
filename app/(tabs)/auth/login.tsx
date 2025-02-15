@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router'
+import React, { useState } from 'react'
 import {
   Alert,
   Image,
@@ -8,44 +8,33 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { saveToken } from "../../../hooks/useSecureStorage";
-import { api } from "../../../lib/axios";
-
+} from 'react-native'
+import { saveToken } from '@/hooks/useSecureStorage'
+import { api } from '@/lib/axios'
 
 export default function LoginScreen() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   async function handleOnClickLogin() {
     if (!email || !password) {
-      Alert.alert('Atenção', 'Informe login e senha');
-      return;
+      Alert.alert('Atenção', 'Informe login e senha')
+      return
     }
 
     try {
-      // Chama a rota /login do Elysia
-      const response = await api.post('/login', {
-        email,
-        password,
-      });
+      const response = await api.post('/login', { email, password })
+      const { token } = response.data
 
-      // Recebemos algo como: { token: "...jwt..." }
-      const { token } = response.data;
+      // Salva o token (sem decodificar)
+      await saveToken(token)
 
-      // Salvar token no SecureStore (ou outro)
-      await saveToken(token);
-
-      console.log('response: ', response)
-      console.log('token: ', token)
-
-      // Navegar para a tela de Welcome
-      router.navigate('../welcome');
+      // Agora vai para a tela "welcome"
+      router.navigate('../welcome')
     } catch (error: any) {
-      console.error(error);
-      Alert.alert('Erro no Login', 'Usuário ou senha inválidos');
+      console.error(error)
+      Alert.alert('Erro no Login', 'Usuário ou senha inválidos')
     }
   }
 
@@ -86,14 +75,14 @@ export default function LoginScreen() {
 
       <TouchableOpacity
         style={[styles.button, styles.createButton]}
-        onPress={() => router.navigate('/auth/signUp')}>
+        onPress={() => router.navigate('/auth/signUp')}
+      >
         <Text style={styles.buttonText}>Criar Conta</Text>
       </TouchableOpacity>
     </View>
-  );
+  )
 }
 
-// Estilos (mantivemos praticamente iguais)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -144,4 +133,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-});
+})
