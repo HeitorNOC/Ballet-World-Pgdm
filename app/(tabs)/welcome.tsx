@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Image,
@@ -11,10 +11,38 @@ import {
   View
 } from "react-native"
 import { useDecodedToken } from "@/hooks/useDecodeToken"
+import { api } from "@/lib/axios"
 
 export default function HomeScreen() {
   const router = useRouter()
   const { decoded, loading } = useDecodedToken()
+  const [teacher, setTeacher] = useState<{ id: string; name: string } | null>(null)
+  const [isTeacherLoaded, setIsTeacherLoaded] = useState(false)
+
+  useEffect(() => {
+    fetchTeacher()
+  }, [decoded, loading])
+  
+ async function fetchTeacher() {
+      if (!decoded || loading) return
+
+      if (decoded.userType === "student" && decoded.teacherCode) {
+        try {
+          const response = await api.post("/listTeacherByTeacherCode", { teacherCode: decoded.teacherCode });
+
+    
+          if (response.data.length > 0) {
+            setTeacher(response.data[0]);
+          }
+        } catch (error) {
+          console.error("❌ Erro ao buscar professor:", error);
+        } finally {
+          setIsTeacherLoaded(true);
+        }
+      } else {
+        setIsTeacherLoaded(true);
+      }
+    }
 
   if (loading) {
     return (
@@ -45,14 +73,23 @@ export default function HomeScreen() {
 
   const menuItems = []
 
+
+
   if (decoded.userType === "student") {
     menuItems.push(
       { label: "Treinos", icon: "play-outline", onPress: () => router.push("../exercise/student") },
       { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
       { label: "Passos", icon: "footsteps-outline", onPress: () => router.push("../steps") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") },
-      { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") }
-    )
+      { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") },
+      teacher ? { label: "Meu Professor", icon: "school-outline", onPress: () =>
+        router.push({
+          pathname: "/student/chatScreen",
+          params: { userId: teacher.id, userName: teacher.name },
+        }),
+        }
+      : null
+      )
   } else if (decoded.userType === "professor") {
     menuItems.push(
       { label: "Meus Alunos", icon: "people-outline", onPress: () => router.push("../student") },
@@ -82,9 +119,9 @@ export default function HomeScreen() {
       <Text style={styles.subtitle}>O que deseja fazer hoje?</Text>
       <View style={styles.menuContainer}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={item.onPress}>
-            <Ionicons name={item.icon as any} size={36} color="#6E4F3A" />
-            <Text style={styles.menuText}>{item.label}</Text>
+          <TouchableOpacity key={index} style={styles.menuItem} onPress={item?.onPress}>
+            <Ionicons name={item?.icon as any} size={36} color="#6E4F3A" />
+            <Text style={styles.menuText}>{item?.label}</Text>
           </TouchableOpacity>
         ))}
         <TouchableOpacity style={styles.menuItem} onPress={goToDashboard}>

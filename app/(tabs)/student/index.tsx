@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { api } from "@/lib/axios";
 import { useDecodedToken } from "@/hooks/useDecodeToken";
@@ -67,15 +67,24 @@ export default function AlunosScreen() {
     router.push(`../student/${alunoId}`);
   };
 
+  const goToAlunoChat = (aluno: Aluno) => {
+    router.push({
+      pathname: "/student/chatScreen",
+      params: { userId: aluno.id, userName: aluno.name },
+    });
+  };
+
   const renderItem = ({ item }: { item: Aluno }) => (
     <TouchableOpacity
       style={styles.alunoItem}
-      onPress={() => goToAlunoDetail(item.id)}
+      onPress={() => goToAlunoChat(item)}
     >
       <Ionicons name="person-outline" size={24} color="#6E4F3A" />
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.alunoName}>{item.name}</Text>
-        <Text style={styles.alunoProgress}>{item.progress || "Sem progresso"}</Text>
+        <Text style={styles.alunoProgress}>
+          {item.progress || "Sem progresso"}
+        </Text>
       </View>
     </TouchableOpacity>
   );

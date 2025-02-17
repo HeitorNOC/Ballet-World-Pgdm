@@ -9,6 +9,7 @@ type DecodedToken = {
   userType: 'student' | 'professor' | 'admin'
   iat?: number
   exp?: number
+  teacherCode: string
 }
 
 export function useDecodedToken() {
