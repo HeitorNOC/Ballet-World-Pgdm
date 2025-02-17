@@ -2,35 +2,64 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
+import { api } from "@/lib/axios";
 
 export default function AlunoDetailScreen() {
   const router = useRouter();
-  const { alunoId } = useLocalSearchParams()
-  const [alunoName, setAlunoName] = useState("");
-  const [progress, setProgress] = useState("");
+  const { alunoId } = useLocalSearchParams();
+  const [aluno, setAluno] = useState<{ name: string; progress: string }>({
+    name: "",
+    progress: "",
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (alunoId === "1") {
-      setAlunoName("Maria");
-      setProgress("Iniciante");
-    } else if (alunoId === "2") {
-      setAlunoName("João");
-      setProgress("Intermediário");
-    } else {
-      setAlunoName("Ana");
-      setProgress("Avançado");
+    if (!alunoId) return;
+
+    async function fetchAlunoDetails() {
+      try {
+        // 🔹 Buscar dados do aluno pelo ID
+        const response = await api.post("/user", { id: alunoId });
+
+        if (!response.data) {
+          throw new Error("Aluno não encontrado.");
+        }
+
+        setAluno({
+          name: response.data.name,
+          progress: response.data.progress || "Sem progresso",
+        });
+      } catch (error) {
+        console.error("Erro ao carregar detalhes do aluno:", error);
+        Alert.alert("Erro", "Não foi possível carregar os detalhes do aluno.");
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchAlunoDetails();
   }, [alunoId]);
 
   const goBack = () => {
     router.push("../student");
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6E4F3A" />
+        <Text style={styles.loadingText}>Carregando detalhes...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -46,9 +75,9 @@ export default function AlunoDetailScreen() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.alunoName}>{alunoName}</Text>
-        <Text style={styles.alunoProgress}>Nível: {progress}</Text>
-        {/* Outros detalhes, lista de treinos concluídos, etc. */}
+        <Text style={styles.alunoName}>{aluno.name}</Text>
+        <Text style={styles.alunoProgress}>Nível: {aluno.progress}</Text>
+        {/* Aqui podem ser adicionadas mais informações, como treinos concluídos */}
       </View>
     </View>
   );
@@ -94,6 +123,15 @@ const styles = StyleSheet.create({
   },
   alunoProgress: {
     fontSize: 16,
+    color: "#6E4F3A",
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    marginTop: 10,
     color: "#6E4F3A",
   },
 });

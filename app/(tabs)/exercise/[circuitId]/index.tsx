@@ -41,7 +41,7 @@ export default function CircuitDetailScreen() {
 
   // Iniciar -> vai para a tela de passos
   const goToSteps = () => {
-    router.push(`../exercise/${circuitId}/steps`);
+    router.push(`../welcome`);
   };
 
   if (!data) {

@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons'
-import CheckBox from 'expo-checkbox'
-import { useRouter } from 'expo-router'
-import React, { useState } from 'react'
+import { Ionicons } from '@expo/vector-icons';
+import CheckBox from 'expo-checkbox';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
   Alert,
   Image,
@@ -13,254 +13,155 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native'
-import * as ImagePicker from 'expo-image-picker'
-
-// Tipos básicos para os dados do usuário
-type UserData = {
-  fullName: string
-  email: string
-  phone: string
-  username: string
-  password: string
-  confirmPassword: string
-  teacherCode: string | null
-  profileImage: string | null
-}
+} from 'react-native';
+import bcrypt from 'bcryptjs';
+import { api } from '@/lib/axios'; // Importando a API
 
 export default function SignUpScreen() {
-  const router = useRouter()
+  const router = useRouter();
+  const [isAluno, setIsAluno] = useState(false);
+  const [isProfessor, setIsProfessor] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Checkboxes
-  const [isAluno, setIsAluno] = useState(false)
-  const [isProfessor, setIsProfessor] = useState(false)
-
-  // Estado do usuário
-  const [userData, setUserData] = useState<UserData>({
-    fullName: '',
+  const [userData, setUserData] = useState({
+    name: '',
     email: '',
     phone: '',
     username: '',
     password: '',
     confirmPassword: '',
-    teacherCode: null,
-    profileImage: null,
-  })
+    teacherCode: '',
+  });
 
-  // Estado do Modal para TeacherCode
-  const [modalVisible, setModalVisible] = useState(false)
-  const [newCode, setNewCode] = useState('')
-
-  // Função para atualizar dados do usuário
-  function handleInput(field: keyof UserData, value: string) {
-    setUserData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  // Selecionar imagem (abre alerta com as opções)
-  const pickImage = async () => {
-    Alert.alert(
-      'Selecionar Imagem',
-      'Escolha uma opção',
-      [
-        { text: 'Galeria', onPress: openGallery },
-        { text: 'Câmera', onPress: openCamera },
-        { text: 'Cancelar', style: 'cancel' },
-      ],
-      { cancelable: true }
-    )
-  }
-
-  // Abrir galeria
-  const openGallery = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-    if (!permission.granted) {
-      alert('Permissão para acessar a galeria é necessária.')
-      return
+  // **Função para alternar checkboxes**
+  const handleCheckboxChange = (type: 'student' | 'professor') => {
+    if (type === 'student') {
+      setIsAluno(true);
+      setIsProfessor(false);
+      setUserData({ ...userData, teacherCode: '' }); // Remove teacherCode se for aluno
+    } else {
+      setIsAluno(false);
+      setIsProfessor(true);
     }
+  };
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    })
-
-    if (!result.canceled && result.assets.length > 0) {
-      setUserData((prev) => ({
-        ...prev,
-        profileImage: result.assets[0].uri,
-      }))
-    }
-  }
-
-  // Abrir câmera
-  const openCamera = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync()
-    if (!permission.granted) {
-      alert('Permissão para acessar a câmera é necessária.')
-      return
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    })
-
-    if (!result.canceled && result.assets.length > 0) {
-      setUserData((prev) => ({
-        ...prev,
-        profileImage: result.assets[0].uri,
-      }))
-    }
-  }
-
-  // Salvar TeacherCode quando modal for confirmado
+  // **Função para salvar teacherCode**
   const handleSaveCode = () => {
-    setUserData((prev) => ({ ...prev, teacherCode: newCode }))
-    setModalVisible(false)
+    setUserData({ ...userData, teacherCode: newCode });
+    setModalVisible(false);
+  };
+
+  function clearFields() {
+    setIsAluno(false)
+      setIsProfessor(false)
+      setModalVisible(false)
+      setUserData({
+        name: '',
+        email: '',
+        phone: '',
+        username: '',
+        password: '',
+        confirmPassword: '',
+        teacherCode: '',
+      })
+      setNewCode('')
   }
 
-  // Clique no botão Cadastrar
-  const handleSignUp = () => {
-    // Aqui você pode implementar a lógica de validação e envio ao backend
-    // Por exemplo, checar se senhas coincidem, se isProfessor => precisa teacherCode ou não, etc.
-    Alert.alert('Sucesso', 'Cadastro realizado! (Exemplo)')
-    router.navigate('../welcome')
-  }
+  // **Função para cadastrar o usuário**
+  const handleSignUp = async () => {
+    if (!userData.name || !userData.email || !userData.phone || !userData.username || !userData.password) {
+      Alert.alert('Erro', 'Todos os campos são obrigatórios!');
+      return;
+    }
+
+    if (userData.password !== userData.confirmPassword) {
+      Alert.alert('Erro', 'As senhas não coincidem!');
+      return;
+    }
+
+    if (!isAluno && !isProfessor) {
+      Alert.alert('Erro', 'Selecione um tipo de usuário (Aluno ou Professor)!');
+      return;
+    }
+
+    if (isProfessor && !userData.teacherCode) {
+      Alert.alert('Erro', 'Professores precisam de um código de professor.');
+      return;
+    }
+
+    try {
+      // **Hash da senha antes de enviar**
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+      const payload = {
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        username: userData.username,
+        passwordHash: hashedPassword,
+        teacherCode: isProfessor ? userData.teacherCode : '',
+        userType: isAluno ? 'student' : 'professor',
+      };
+
+      const response = await api.post('/users', payload);
+      clearFields()
+      console.log('response: ', response)
+
+      Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+      
+      router.push('../auth/login');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro ao cadastrar usuário. Tente novamente.');
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.navigate('./login')}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('./login')}>
           <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
         </TouchableOpacity>
-
         <Text style={styles.headerTitle}>CADASTRO</Text>
-        <Image
-          source={require('@/assets/images/logo_ballet_world.png')}
-          style={styles.logo}
-        />
-      </View>
-
-      {/* Imagem do perfil (opcional) */}
-      <View style={styles.imageContainer}>
-        <TouchableOpacity style={styles.iconContainer} onPress={pickImage}>
-          {userData.profileImage ? (
-            <Image source={{ uri: userData.profileImage }} style={styles.profileImage} />
-          ) : (
-            <>
-              <Text style={styles.iconText}>
-                {userData.fullName ? userData.fullName.charAt(0) : '?'}
-              </Text>
-              <Ionicons
-                name="camera-outline"
-                size={24}
-                color="#FFF"
-                style={styles.cameraIcon}
-              />
-            </>
-          )}
-        </TouchableOpacity>
+        <Image source={require('@/assets/images/logo_ballet_world.png')} style={styles.logo} />
       </View>
 
       <Text style={styles.label}>Nome Completo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite seu nome completo"
-        placeholderTextColor="#D9BCA7"
-        value={userData.fullName}
-        onChangeText={(text) => handleInput('fullName', text)}
-      />
+      <TextInput style={styles.input} placeholder="Nome completo" value={userData.name} onChangeText={(text) => setUserData({ ...userData, name: text })} />
 
       <Text style={styles.label}>Email</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite seu email"
-        placeholderTextColor="#D9BCA7"
-        value={userData.email}
-        onChangeText={(text) => handleInput('email', text)}
-      />
+      <TextInput style={styles.input} placeholder="Email" value={userData.email} onChangeText={(text) => setUserData({ ...userData, email: text })} />
 
       <Text style={styles.label}>Telefone</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite seu telefone"
-        placeholderTextColor="#D9BCA7"
-        value={userData.phone}
-        onChangeText={(text) => handleInput('phone', text)}
-      />
+      <TextInput style={styles.input} placeholder="Telefone" value={userData.phone} onChangeText={(text) => setUserData({ ...userData, phone: text })} />
 
       <Text style={styles.label}>Nome de Usuário</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Escolha um nome de usuário"
-        placeholderTextColor="#D9BCA7"
-        value={userData.username}
-        onChangeText={(text) => handleInput('username', text)}
-      />
+      <TextInput style={styles.input} placeholder="Usuário" value={userData.username} onChangeText={(text) => setUserData({ ...userData, username: text })} />
 
       <Text style={styles.label}>Senha</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite sua senha"
-        placeholderTextColor="#D9BCA7"
-        secureTextEntry
-        value={userData.password}
-        onChangeText={(text) => handleInput('password', text)}
-      />
+      <TextInput style={styles.input} placeholder="Senha" secureTextEntry value={userData.password} onChangeText={(text) => setUserData({ ...userData, password: text })} />
 
-      <Text style={styles.label}>Confirme sua Senha</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Confirme sua senha"
-        placeholderTextColor="#D9BCA7"
-        secureTextEntry
-        value={userData.confirmPassword}
-        onChangeText={(text) => handleInput('confirmPassword', text)}
-      />
+      <Text style={styles.label}>Confirme a Senha</Text>
+      <TextInput style={styles.input} placeholder="Confirme a senha" secureTextEntry value={userData.confirmPassword} onChangeText={(text) => setUserData({ ...userData, confirmPassword: text })} />
 
       <View style={styles.checkboxContainer}>
         <View style={styles.checkboxOption}>
-          <CheckBox value={isAluno} onValueChange={setIsAluno} />
+          <CheckBox value={isAluno} onValueChange={() => handleCheckboxChange('student')} />
           <Text style={styles.checkboxText}>Aluno</Text>
         </View>
         <View style={styles.checkboxOption}>
-          <CheckBox value={isProfessor} onValueChange={setIsProfessor} />
+          <CheckBox value={isProfessor} onValueChange={() => handleCheckboxChange('professor')} />
           <Text style={styles.checkboxText}>Professor</Text>
         </View>
       </View>
 
-      {/* Se for professor, exibir teacherCode (igual ao Profile) */}
       {isProfessor && (
         <>
           <Text style={styles.label}>Código do Professor</Text>
-          {userData.teacherCode ? (
-            <>
-              <TextInput
-                style={[styles.input, styles.disabledInput]}
-                value={userData.teacherCode}
-                editable={false}
-              />
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => setModalVisible(true)}
-              >
-                <Text style={styles.buttonText}>Trocar Código</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => setModalVisible(true)}
-            >
-              <Text style={styles.buttonText}>Adicionar Código</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+            <Text style={styles.buttonText}>{userData.teacherCode ? 'Alterar Código' : 'Adicionar Código'}</Text>
+          </TouchableOpacity>
         </>
       )}
 
@@ -268,28 +169,16 @@ export default function SignUpScreen() {
         <Text style={styles.buttonText}>Cadastrar</Text>
       </TouchableOpacity>
 
-      {/* Modal para inserir código do professor */}
       <Modal animationType="slide" transparent visible={modalVisible}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Digite o Código do Professor</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Insira o código"
-              value={newCode}
-              onChangeText={setNewCode}
-            />
+            <TextInput style={styles.modalInput} placeholder="Código" value={newCode} onChangeText={setNewCode} />
             <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.modalButton, { backgroundColor: '#5C2E2E' }]}
-                onPress={handleSaveCode}
-              >
+              <Pressable style={[styles.modalButton, { backgroundColor: '#5C2E2E' }]} onPress={handleSaveCode}>
                 <Text style={styles.buttonText}>Salvar</Text>
               </Pressable>
-              <Pressable
-                style={[styles.modalButton, { backgroundColor: '#888' }]}
-                onPress={() => setModalVisible(false)}
-              >
+              <Pressable style={[styles.modalButton, { backgroundColor: '#888' }]} onPress={() => setModalVisible(false)}>
                 <Text style={styles.buttonText}>Cancelar</Text>
               </Pressable>
             </View>
@@ -297,7 +186,7 @@ export default function SignUpScreen() {
         </View>
       </Modal>
     </ScrollView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

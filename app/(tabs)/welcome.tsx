@@ -49,21 +49,22 @@ export default function HomeScreen() {
     menuItems.push(
       { label: "Treinos", icon: "play-outline", onPress: () => router.push("../exercise/student") },
       { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
+      { label: "Passos", icon: "footsteps-outline", onPress: () => router.push("../steps") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") },
-      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") }
+      { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") }
     )
   } else if (decoded.userType === "professor") {
     menuItems.push(
       { label: "Meus Alunos", icon: "people-outline", onPress: () => router.push("../student") },
-      { label: "Criar/Editar Treinos", icon: "create-outline", onPress: () => router.push("../exercise/professor") },
-      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") },
+      { label: "Treinos", icon: "create-outline", onPress: () => router.push("../exercise/professor") },
+      { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") },
       { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") }
     )
   } else if (decoded.userType === "admin") {
     menuItems.push(
       { label: "Gerenciar Usuários", icon: "people-outline", onPress: () => router.push("../admin/users") },
-      { label: "Updates", icon: "notifications-outline", onPress: () => router.push("../update") },
+      { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") },
       { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") }
     )

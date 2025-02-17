@@ -46,7 +46,7 @@ export default function UpdatesScreen() {
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
         </TouchableOpacity>
-        <Text style={styles.title}>Updates</Text>
+        <Text style={styles.title}>Atualizações</Text>
         <Image
           source={require("@/assets/images/logo_ballet_world.png")}
           style={styles.logo}

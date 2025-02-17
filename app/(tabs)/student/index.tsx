@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -9,6 +11,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { api } from "@/lib/axios";
+import { useDecodedToken } from "@/hooks/useDecodeToken";
 
 type Aluno = {
   id: string;
@@ -18,16 +22,42 @@ type Aluno = {
 
 export default function AlunosScreen() {
   const router = useRouter();
+  const { decoded, loading } = useDecodedToken();
   const [alunos, setAlunos] = useState<Aluno[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [teacherCode, setTeacherCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const mockAlunos: Aluno[] = [
-      { id: "1", name: "Maria", progress: "Iniciante" },
-      { id: "2", name: "João", progress: "Intermediário" },
-      { id: "3", name: "Ana", progress: "Avançado" },
-    ];
-    setAlunos(mockAlunos);
-  }, []);
+    if (!decoded) return;
+
+    async function fetchTeacherCodeAndAlunos() {
+      try {
+        // 🔹 1. Buscar dados do usuário pelo ID
+        const userResponse = await api.post("/user", { id: decoded?.sub });
+
+        if (!userResponse.data || !userResponse.data.teacherCode) {
+          throw new Error("TeacherCode não encontrado.");
+        }
+
+        const code = userResponse.data.teacherCode;
+        setTeacherCode(code);
+
+        // 🔹 2. Buscar alunos pelo teacherCode
+        const alunosResponse = await api.post("/listUsersByTeacherCode", {
+          teacherCode: code,
+        });
+
+        setAlunos(alunosResponse.data);
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        Alert.alert("Erro", "Não foi possível carregar os alunos.");
+      } finally {
+        setLoadingData(false);
+      }
+    }
+
+    fetchTeacherCodeAndAlunos();
+  }, [decoded]);
 
   const goBack = () => {
     router.push("../welcome");
@@ -45,10 +75,19 @@ export default function AlunosScreen() {
       <Ionicons name="person-outline" size={24} color="#6E4F3A" />
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.alunoName}>{item.name}</Text>
-        <Text style={styles.alunoProgress}>{item.progress}</Text>
+        <Text style={styles.alunoProgress}>{item.progress || "Sem progresso"}</Text>
       </View>
     </TouchableOpacity>
   );
+
+  if (loading || loadingData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6E4F3A" />
+        <Text style={styles.loadingText}>Carregando alunos...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -63,12 +102,18 @@ export default function AlunosScreen() {
         />
       </View>
 
-      <FlatList
-        data={alunos}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        style={styles.list}
-      />
+      {alunos.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Nenhum aluno encontrado.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={alunos}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          style={styles.list}
+        />
+      )}
     </View>
   );
 }
@@ -119,5 +164,24 @@ const styles = StyleSheet.create({
   alunoProgress: {
     fontSize: 14,
     color: "#6E4F3A",
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#6E4F3A",
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#6E4F3A",
+    fontWeight: "bold",
   },
 });
