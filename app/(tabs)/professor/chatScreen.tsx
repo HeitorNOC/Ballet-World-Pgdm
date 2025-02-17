@@ -20,7 +20,7 @@ import { useDecodedToken } from "@/hooks/useDecodeToken";
 const socket = io("http://localhost:3001");
 
 interface Message {
-  senderId: string;
+  sender_id: string;
   message: string;
   timestamp: string;
   read: boolean;
@@ -46,80 +46,83 @@ export default function ChatScreen() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const flatListRef = useRef<FlatList>(null);
 
-  const senderId = decoded?.sub;
+  const sender_id = decoded?.sub;
 
   useEffect(() => {
-    setSenderData(null);
-    setReceiverData(null);
-    if (!senderId || !receiverId) return;
+  if (!sender_id || !receiverId) return;
 
-    async function fetchUserData() {
-      try {
-        setLoadingMessages(true);
+  socket.connect();
 
-        const senderResponse = await api.post("/user", { id: senderId });
-        if (!senderResponse.data) throw new Error("Usuário não encontrado.");
-        setSenderData({
-          id: senderResponse.data.id,
-          role: senderResponse.data.userType,
-          name: senderResponse.data.name,
-        });
+  async function fetchUserData() {
+    try {
+      setLoadingMessages(true);
 
-        const receiverResponse = await api.post("/user", { id: receiverId });
-        if (!receiverResponse.data) throw new Error("Usuário não encontrado.");
-        setReceiverData({
-          id: receiverResponse.data.id,
-          role: receiverResponse.data.userType,
-          name: receiverResponse.data.name,
-        });
+      const senderResponse = await api.post("/user", { id: sender_id });
+      if (!senderResponse.data) throw new Error("Usuário não encontrado.");
+      setSenderData({
+        id: senderResponse.data.id,
+        role: senderResponse.data.userType,
+        name: senderResponse.data.name,
+      });
 
-        socket.emit("register", {
-          userId: senderResponse.data.id,
-          role: senderResponse.data.userType,
-        });
+      const receiverResponse = await api.post("/user", { id: receiverId });
+      if (!receiverResponse.data) throw new Error("Usuário não encontrado.");
+      setReceiverData({
+        id: receiverResponse.data.id,
+        role: receiverResponse.data.userType,
+        name: receiverResponse.data.name,
+      });
 
-        socket.emit("openChat", {
-          userId: senderResponse.data.id,
-          contactId: receiverResponse.data.id,
-        });
+      socket.emit("register", {
+        userId: senderResponse.data.id,
+        role: senderResponse.data.userType,
+      });
 
-        socket.on("chatHistory", (history: Message[]) => {
-          setMessages(history);
-          setLoadingMessages(false);
-          scrollToBottom();
-        });
+      socket.emit("openChat", {
+        userId: senderResponse.data.id,
+        contactId: receiverResponse.data.id,
+      });
 
-        socket.on("receiveMessage", ({ senderId, message }: Message) => {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              senderId: senderId,
-              message,
-              timestamp: new Date().toISOString(),
-              read: false,
-            },
-          ]);
-          scrollToBottom();
-        });
-      } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
-        Alert.alert("Erro", "Não foi possível carregar o chat.");
-      }
+      socket.on("chatHistory", (history: Message[]) => {
+        setMessages(history);
+        setLoadingMessages(false);
+        scrollToBottom();
+      });
+
+      socket.on("receiveMessage", ({ sender_id, message }: Message) => {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            sender_id: sender_id,
+            message,
+            timestamp: new Date().toISOString(),
+            read: false,
+          },
+        ]);
+        scrollToBottom();
+      });
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      Alert.alert("Erro", "Não foi possível carregar o chat.");
     }
+  }
 
-    fetchUserData();
+  fetchUserData();
 
     return () => {
+      console.log("🔴 Desconectando socket...");
       socket.off("chatHistory");
       socket.off("receiveMessage");
+      socket.disconnect();
       setMessages([]);
     };
-  }, [senderId, receiverId]);
+  }, [sender_id, receiverId]);
+
 
   const sendMessage = () => {
     if (message.trim() && senderData && receiverData) {
       socket.emit("sendMessage", {
-        senderId: senderData.id,
+        sender_id: senderData.id,
         receiverId: receiverData.id,
         message,
       });
@@ -127,7 +130,7 @@ export default function ChatScreen() {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
-          senderId: senderData.id,
+          sender_id: senderData.id,
           message,
           timestamp: new Date().toISOString(),
           read: true,
@@ -151,7 +154,7 @@ export default function ChatScreen() {
   if (loadingUser || !senderData || !receiverData) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="white" />
+        <ActivityIndicator size="large" color="#6E4F3A" />
         <Text style={styles.loadingText}>Carregando chat...</Text>
       </View>
     );
@@ -178,21 +181,23 @@ export default function ChatScreen() {
           ref={flatListRef}
           data={messages}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.messageContainer,
-                item.senderId === senderData.id
-                  ? styles.sentMessage
-                  : styles.receivedMessage,
-              ]}
-            >
-              <Text style={styles.messageText}>{item.message}</Text>
-              <Text style={styles.timestamp}>
-                {new Date(item.timestamp).toLocaleTimeString()}
-              </Text>
-            </View>
-          )}
+          renderItem={({ item }) => {
+            const isSentByUser = item.sender_id == senderData?.id;
+            console.log(item.sender_id, senderData?.id)
+            return (
+              <View
+                style={[
+                  styles.messageContainer,
+                  isSentByUser ? styles.sentMessage : styles.receivedMessage,
+                ]}
+              >
+                <Text style={styles.messageText}>{item.message}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(item.timestamp).toLocaleTimeString()}
+                </Text>
+              </View>
+            );
+          }}
         />
       )}
 
@@ -221,31 +226,54 @@ const styles = StyleSheet.create({
   },
   backButton: { marginRight: 10 },
   title: { fontSize: 18, fontWeight: "bold", color: "#6E4F3A" },
+  
   messageContainer: {
-    padding: 10,
+    padding: 12,
     marginVertical: 5,
-    borderRadius: 10,
-    maxWidth: "80%",
-    alignSelf: "flex-start",
+    borderRadius: 15,
+    maxWidth: "75%",
   },
-  sentMessage: { backgroundColor: "#d9a7b0", alignSelf: "flex-end" },
-  receivedMessage: { backgroundColor: "#bfbfbf", alignSelf: "flex-start" },
-  messageText: { fontSize: 16 },
+
+  sentMessage: {
+    backgroundColor: "#d97777",
+    alignSelf: "flex-end",
+    borderTopLeftRadius: 15,
+    marginRight:20,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+  },
+
+  receivedMessage: {
+    backgroundColor: "#bfbfbf",
+    alignSelf: "flex-start",
+    borderTopLeftRadius: 15,
+    marginLeft:20,
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+  },
+
+  messageText: { 
+    fontSize: 16, 
+    color: "white" 
+  },
+
   timestamp: {
     fontSize: 12,
-    color: "#555",
-    marginTop: 5,
+    marginTop: 3,
+    opacity: 0.7,
+    color: "white",
     alignSelf: "flex-end",
   },
+
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
     padding: 10,
     borderTopWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#FDEAE2",
     marginHorizontal: 10,
     borderRadius: 25,
+    backgroundColor: "white",
   },
   input: {
     flex: 1,

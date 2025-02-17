@@ -20,7 +20,7 @@ import { useDecodedToken } from "@/hooks/useDecodeToken";
 const socket = io("http://localhost:3001");
 
 interface Message {
-  senderId: string;
+  sender_id: string;
   message: string;
   timestamp: string;
   read: boolean;
@@ -46,80 +46,84 @@ export default function ChatScreen() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const flatListRef = useRef<FlatList>(null);
 
-  const senderId = decoded?.sub;
+  const sender_id = decoded?.sub;
 
   useEffect(() => {
-    setSenderData(null);
-    setReceiverData(null);
-    if (!senderId || !receiverId) return;
+  if (!sender_id || !receiverId) return;
 
-    async function fetchUserData() {
-      try {
-        setLoadingMessages(true);
+  // Conectar ao socket apenas quando entrar na tela
+  socket.connect();
 
-        const senderResponse = await api.post("/user", { id: senderId });
-        if (!senderResponse.data) throw new Error("Usuário não encontrado.");
-        setSenderData({
-          id: senderResponse.data.id,
-          role: senderResponse.data.userType,
-          name: senderResponse.data.name,
-        });
+  async function fetchUserData() {
+    try {
+      setLoadingMessages(true);
 
-        const receiverResponse = await api.post("/user", { id: receiverId });
-        if (!receiverResponse.data) throw new Error("Usuário não encontrado.");
-        setReceiverData({
-          id: receiverResponse.data.id,
-          role: receiverResponse.data.userType,
-          name: receiverResponse.data.name,
-        });
+      const senderResponse = await api.post("/user", { id: sender_id });
+      if (!senderResponse.data) throw new Error("Usuário não encontrado.");
+      setSenderData({
+        id: senderResponse.data.id,
+        role: senderResponse.data.userType,
+        name: senderResponse.data.name,
+      });
 
-        socket.emit("register", {
-          userId: senderResponse.data.id,
-          role: senderResponse.data.userType,
-        });
+      const receiverResponse = await api.post("/user", { id: receiverId });
+      if (!receiverResponse.data) throw new Error("Usuário não encontrado.");
+      setReceiverData({
+        id: receiverResponse.data.id,
+        role: receiverResponse.data.userType,
+        name: receiverResponse.data.name,
+      });
 
-        socket.emit("openChat", {
-          userId: senderResponse.data.id,
-          contactId: receiverResponse.data.id,
-        });
+      socket.emit("register", {
+        userId: senderResponse.data.id,
+        role: senderResponse.data.userType,
+      });
 
-        socket.on("chatHistory", (history: Message[]) => {
-          setMessages(history);
-          setLoadingMessages(false);
-          scrollToBottom();
-        });
+      socket.emit("openChat", {
+        userId: senderResponse.data.id,
+        contactId: receiverResponse.data.id,
+      });
 
-        socket.on("receiveMessage", ({ senderId, message }: Message) => {
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              senderId: senderId,
-              message,
-              timestamp: new Date().toISOString(),
-              read: false,
-            },
-          ]);
-          scrollToBottom();
-        });
-      } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
-        Alert.alert("Erro", "Não foi possível carregar o chat.");
-      }
+      socket.on("chatHistory", (history: Message[]) => {
+        setMessages(history);
+        setLoadingMessages(false);
+        scrollToBottom();
+      });
+
+      socket.on("receiveMessage", ({ sender_id, message }: Message) => {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            sender_id: sender_id,
+            message,
+            timestamp: new Date().toISOString(),
+            read: false,
+          },
+        ]);
+        scrollToBottom();
+      });
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      Alert.alert("Erro", "Não foi possível carregar o chat.");
     }
+  }
 
-    fetchUserData();
+  fetchUserData();
 
     return () => {
+      console.log("🔴 Desconectando socket...");
       socket.off("chatHistory");
       socket.off("receiveMessage");
+      socket.disconnect();
       setMessages([]);
     };
-  }, [senderId, receiverId]);
+  }, [sender_id, receiverId]);
+
 
   const sendMessage = () => {
     if (message.trim() && senderData && receiverData) {
       socket.emit("sendMessage", {
-        senderId: senderData.id,
+        sender_id: senderData.id,
         receiverId: receiverData.id,
         message,
       });
@@ -127,7 +131,7 @@ export default function ChatScreen() {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
-          senderId: senderData.id,
+          sender_id: senderData.id,
           message,
           timestamp: new Date().toISOString(),
           read: true,
