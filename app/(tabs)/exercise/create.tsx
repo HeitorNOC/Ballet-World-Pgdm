@@ -80,7 +80,7 @@ export default function CreateCircuitScreen() {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: "#FDEAE2", padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20, marginTop: 50 },
   title: { fontSize: 18, fontWeight: "bold", marginLeft: 10 },
   label: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
   input: { backgroundColor: "#FFF", borderRadius: 10, padding: 10, marginBottom: 10 },

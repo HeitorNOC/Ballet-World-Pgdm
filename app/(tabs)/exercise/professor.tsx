@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 type Circuit = {
     id: string
@@ -61,7 +61,7 @@ export default function ProfessorExerciseScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#FDEAE2", padding: 20 },
-    header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+    header: { flexDirection: "row", alignItems: "center", marginBottom: 20, marginTop: 50 },
     backButton: { marginRight: 10 },
     title: { fontSize: 18, fontWeight: "bold", color: "#6E4F3A" },
     createButton: { backgroundColor: "#5C2E2E", padding: 10, borderRadius: 10, flexDirection: "row", alignItems: "center", marginBottom: 20 },

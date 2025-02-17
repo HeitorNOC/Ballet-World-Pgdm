@@ -1,6 +1,8 @@
+import { useDecodedToken } from "@/hooks/useDecodeToken"
+import { api } from "@/lib/axios"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   ActivityIndicator,
   Image,
@@ -10,8 +12,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native"
-import { useDecodedToken } from "@/hooks/useDecodeToken"
-import { api } from "@/lib/axios"
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -22,27 +22,27 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchTeacher()
   }, [decoded, loading])
-  
- async function fetchTeacher() {
-      if (!decoded || loading) return
 
-      if (decoded.userType === "student" && decoded.teacherCode) {
-        try {
-          const response = await api.post("/listTeacherByTeacherCode", { teacherCode: decoded.teacherCode });
+  async function fetchTeacher() {
+    if (!decoded || loading) return
 
-    
-          if (response.data.length > 0) {
-            setTeacher(response.data[0]);
-          }
-        } catch (error) {
-          console.error("❌ Erro ao buscar professor:", error);
-        } finally {
-          setIsTeacherLoaded(true);
+    if (decoded.userType === "student" && decoded.teacherCode) {
+      try {
+        const response = await api.post("/listTeacherByTeacherCode", { teacherCode: decoded.teacherCode });
+
+
+        if (response.data.length > 0) {
+          setTeacher(response.data[0]);
         }
-      } else {
+      } catch (error) {
+        console.error("❌ Erro ao buscar professor:", error);
+      } finally {
         setIsTeacherLoaded(true);
       }
+    } else {
+      setIsTeacherLoaded(true);
     }
+  }
 
   if (loading) {
     return (
@@ -82,19 +82,21 @@ export default function HomeScreen() {
       { label: "Passos", icon: "footsteps-outline", onPress: () => router.push("../steps") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") },
       { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") },
-      teacher ? { label: "Meu Professor", icon: "school-outline", onPress: () =>
-        router.push({
-          pathname: "/student/chatScreen",
-          params: { userId: teacher.id, userName: teacher.name },
-        }),
-        }
-      : null
-      )
+      teacher ? {
+        label: "Meu Professor", icon: "school-outline", onPress: () =>
+          router.push({
+            pathname: "/student/chatScreen",
+            params: { userId: teacher.id, userName: teacher.name },
+          }),
+      }
+        : null
+    )
   } else if (decoded.userType === "professor") {
     menuItems.push(
       { label: "Meus Alunos", icon: "people-outline", onPress: () => router.push("../student") },
       { label: "Treinos", icon: "create-outline", onPress: () => router.push("../exercise/professor") },
       { label: "Atualizações", icon: "notifications-outline", onPress: () => router.push("../update") },
+      { label: "Passos", icon: "footsteps-outline", onPress: () => router.push("../steps") },
       { label: "Perfil", icon: "person-circle-outline", onPress: () => router.push("../profile") },
       { label: "História", icon: "book-outline", onPress: () => router.push("../history") }
     )

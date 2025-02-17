@@ -1,4 +1,6 @@
+import { useDecodedToken } from "@/hooks/useDecodeToken";
 import { removeToken } from "@/hooks/useSecureStorage";
+import { api } from "@/lib/axios";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -15,8 +17,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { api } from "@/lib/axios";
-import { useDecodedToken } from "@/hooks/useDecodeToken";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [teacherCode, setTeacherCode] = useState(""); 
+  const [teacherCode, setTeacherCode] = useState("");
   const [modalVisible, setModalVisible] = useState(false)
 
   type UserData = {
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
 
       Alert.alert("Sucesso!", "Seus dados foram atualizados.");
       setIsEditing(false);
-      setUserData(response.data); 
+      setUserData(response.data);
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       Alert.alert("Erro", "Não foi possível atualizar os dados.");
@@ -273,7 +273,7 @@ export default function ProfileScreen() {
             <TextInput
               style={styles.input}
               value={teacherCode}
-              editable={userData.userType === "student"} 
+              editable={userData.userType === "student"}
               onChangeText={(text) => setTeacherCode(text.toUpperCase())}
             />
 
@@ -311,7 +311,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, backgroundColor: "#FDEAE2", padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20, marginTop: 50 },
   backButton: { marginRight: 10 },
   headerTitle: { fontSize: 22, fontWeight: "bold", color: "#6E4F3A" },
   profileContainer: { alignItems: "center", marginBottom: 20 },
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)", 
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
     width: "80%",
