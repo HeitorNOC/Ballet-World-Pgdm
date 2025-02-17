@@ -17,7 +17,7 @@ import { io } from "socket.io-client";
 import { api } from "@/lib/axios";
 import { useDecodedToken } from "@/hooks/useDecodeToken";
 
-const socket = io("http://localhost:3001");
+const socket = io("http://3.142.247.60:3001");
 
 interface Message {
   sender_id: string;
@@ -51,7 +51,6 @@ export default function ChatScreen() {
   useEffect(() => {
   if (!sender_id || !receiverId) return;
 
-  // Conectar ao socket apenas quando entrar na tela
   socket.connect();
 
   async function fetchUserData() {
@@ -123,7 +122,7 @@ export default function ChatScreen() {
   const sendMessage = () => {
     if (message.trim() && senderData && receiverData) {
       socket.emit("sendMessage", {
-        sender_id: senderData.id,
+        senderId: senderData.id,
         receiverId: receiverData.id,
         message,
       });

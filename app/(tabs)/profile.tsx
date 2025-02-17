@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,9 +24,12 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [teacherCode, setTeacherCode] = useState(""); 
+  const [modalVisible, setModalVisible] = useState(false)
 
   type UserData = {
     id: number;
+    userType: string
     username: string;
     email: string;
     phone?: string;
@@ -39,6 +43,7 @@ export default function ProfileScreen() {
       try {
         const response = await api.post("/user", { id: decoded?.sub });
         setUserData(response.data);
+        setTeacherCode(response.data.teacherCode)
       } catch (error) {
         console.error("Erro ao buscar perfil:", error);
         Alert.alert("Erro", "Não foi possível carregar os dados do perfil.");
@@ -48,7 +53,6 @@ export default function ProfileScreen() {
     fetchUserProfile();
   }, [decoded]);
 
-  /** Função para atualizar os dados do usuário */
   const handleUpdateProfile = async () => {
     if (!userData) return;
 
@@ -62,14 +66,14 @@ export default function ProfileScreen() {
 
       Alert.alert("Sucesso!", "Seus dados foram atualizados.");
       setIsEditing(false);
-      setUserData(response.data); // Atualiza os dados locais
+      setUserData(response.data); 
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       Alert.alert("Erro", "Não foi possível atualizar os dados.");
     }
   };
 
-  /** Abrir a galeria e atualizar a imagem */
+
   const pickImage = async () => {
     Alert.alert("Selecionar Imagem", "Escolha uma opção", [
       { text: "Galeria", onPress: openGallery },
@@ -136,6 +140,81 @@ export default function ProfileScreen() {
     );
   }
 
+  const generateTeacherCode = () => {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const numbers = "0123456789"
+
+    const randomLetters = Array.from({ length: 3 }, () =>
+      letters.charAt(Math.floor(Math.random() * letters.length))
+    ).join("");
+
+    const randomNumbers = Array.from({ length: 4 }, () =>
+      numbers.charAt(Math.floor(Math.random() * numbers.length))
+    ).join("");
+
+    return `${randomLetters}-${randomNumbers}`
+  }
+
+  const handleUpdateTeacherCode = async () => {
+    if (!userData) return
+
+    Alert.alert(
+      "Confirmação",
+      "Tem certeza que deseja trocar seu código de professor?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sim",
+          onPress: async () => {
+            const newCode = generateTeacherCode()
+            try {
+              const response = await api.patch("/users/teacherCode", {
+                id: userData.id,
+                teacherCode: newCode,
+              });
+
+              setUserData({ ...userData, teacherCode: newCode });
+              setTeacherCode(newCode)
+              Alert.alert("Sucesso!", "Seu novo código de professor foi gerado.");
+            } catch (error) {
+              Alert.alert("Erro", "Não foi possível atualizar o código.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleUpdateStudentTeacherCode = async () => {
+    if (!userData) return
+
+    if (teacherCode !== userData.teacherCode) {
+      Alert.alert(
+        "Confirmação",
+        "Tem certeza que deseja trocar o código do professor?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Sim",
+            onPress: async () => {
+              try {
+                const response = await api.patch("/users/teacherCode", {
+                  id: userData.id,
+                  teacherCode: teacherCode.toUpperCase(),
+                });
+
+                setUserData({ ...userData, teacherCode: teacherCode.toUpperCase() });
+                Alert.alert("Sucesso!", "Código atualizado com sucesso.")
+              } catch (error) {
+                Alert.alert("Erro", "Não foi possível atualizar o código.")
+              }
+            },
+          },
+        ]
+      )
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       {/* Botão de voltar */}
@@ -176,6 +255,46 @@ export default function ProfileScreen() {
         onChangeText={(text) => setUserData({ ...userData, phone: text })}
       />
 
+      {userData.userType === "teacher" ? (
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+          <Text style={styles.buttonText}>Código de Professor</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
+          <Text style={styles.buttonText}>Código do Professor</Text>
+        </TouchableOpacity>
+      )}
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Código do Professor</Text>
+
+            <TextInput
+              style={styles.input}
+              value={teacherCode}
+              editable={userData.userType === "student"} 
+              onChangeText={(text) => setTeacherCode(text.toUpperCase())}
+            />
+
+            {userData.userType === "professor" ? (
+              <TouchableOpacity style={styles.buttonUpdateTeacherCode} onPress={handleUpdateTeacherCode}>
+                <Text style={styles.buttonText}>Gerar Novo Código</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.buttonUpdateTeacherCode} onPress={handleUpdateStudentTeacherCode}>
+                <Text style={styles.buttonText}>Salvar Código</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity style={styles.buttonClose} onPress={() => setModalVisible(false)}>
+              <Text style={styles.buttonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+
       <TouchableOpacity
         style={styles.button}
         onPress={isEditing ? handleUpdateProfile : () => setIsEditing(true)}
@@ -214,5 +333,62 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#6E4F3A",
-},
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)", 
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#FFF",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#6E4F3A",
+    marginBottom: 15,
+  },
+  teacherCode: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#6E4F3A",
+    marginVertical: 10,
+  },
+  generateButton: {
+    backgroundColor: "#6E4F3A",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 10,
+  },
+  generateButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  buttonClose: {
+    backgroundColor: "#C62828",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+  },
+  buttonUpdateTeacherCode: { backgroundColor: "#5C2E2E", borderRadius: 10, height: 40, justifyContent: "center", alignItems: "center", marginVertical: 5, width: "100%" },
+  closeButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });

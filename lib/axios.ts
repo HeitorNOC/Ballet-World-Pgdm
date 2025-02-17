@@ -3,14 +3,14 @@ import axios from 'axios';
 import { getToken } from "../hooks/useSecureStorage";
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3333',
+  baseURL: 'http://3.142.247.60:3333',
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 
- api.interceptors.request.use(
+api.interceptors.request.use(
   async (config) => {
     const token = await getToken();
     if (token) {

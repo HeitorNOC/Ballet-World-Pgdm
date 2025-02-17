@@ -65,14 +65,15 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity onPress={() => router.navigate('/auth/resetPassword')}>
+      {/* <TouchableOpacity onPress={() => router.navigate('/auth/resetPassword')}>
         <Text style={styles.link}>Esqueci minha senha</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <TouchableOpacity style={styles.button} onPress={handleOnClickLogin}>
-        <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-
+      <View style={{ marginTop: 25 }}>
+      </View>
+        <TouchableOpacity style={styles.button} onPress={handleOnClickLogin}>
+          <Text style={styles.buttonText}>Entrar</Text>
+        </TouchableOpacity>
       <TouchableOpacity
         style={[styles.button, styles.createButton]}
         onPress={() => router.navigate('/auth/signUp')}

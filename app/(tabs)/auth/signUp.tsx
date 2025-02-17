@@ -14,8 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import bcrypt from 'bcryptjs';
-import { api } from '@/lib/axios'; // Importando a API
+import bcrypt from 'react-native-bcrypt';
+import { api } from '@/lib/axios'; 
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -68,54 +68,64 @@ export default function SignUpScreen() {
       setNewCode('')
   }
 
-  // **Função para cadastrar o usuário**
   const handleSignUp = async () => {
-    if (!userData.name || !userData.email || !userData.phone || !userData.username || !userData.password) {
-      Alert.alert('Erro', 'Todos os campos são obrigatórios!');
-      return;
-    }
+  if (!userData.name || !userData.email || !userData.phone || !userData.username || !userData.password) {
+    Alert.alert('Erro', 'Todos os campos são obrigatórios!');
+    return;
+  }
 
-    if (userData.password !== userData.confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem!');
-      return;
-    }
+  if (userData.password !== userData.confirmPassword) {
+    Alert.alert('Erro', 'As senhas não coincidem!');
+    return;
+  }
 
-    if (!isAluno && !isProfessor) {
-      Alert.alert('Erro', 'Selecione um tipo de usuário (Aluno ou Professor)!');
-      return;
-    }
+  if (!isAluno && !isProfessor) {
+    Alert.alert('Erro', 'Selecione um tipo de usuário (Aluno ou Professor)!');
+    return;
+  }
 
-    if (isProfessor && !userData.teacherCode) {
-      Alert.alert('Erro', 'Professores precisam de um código de professor.');
-      return;
-    }
+  if (isProfessor && !userData.teacherCode) {
+    Alert.alert('Erro', 'Professores precisam de um código de professor.');
+    return;
+  }
 
-    try {
-      // **Hash da senha antes de enviar**
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+  try {
+    const hashPassword = (password: string) => {
+      return new Promise((resolve, reject) => {
+        bcrypt.hash(password, 10, (err, hash) => {
+          if (err) reject(err)
+          else resolve(hash)
+        });
+      });
+    };
 
-      const payload = {
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
-        username: userData.username,
-        passwordHash: hashedPassword,
-        teacherCode: isProfessor ? userData.teacherCode : '',
-        userType: isAluno ? 'student' : 'professor',
-      };
+    const hashedPassword = await hashPassword(userData.password);
+    console.log("Hash gerado:", hashedPassword);
 
-      const response = await api.post('/users', payload);
-      clearFields()
-      console.log('response: ', response)
+    const payload = {
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone,
+      username: userData.username,
+      passwordHash: hashedPassword,
+      teacherCode: isProfessor ? userData.teacherCode : '',
+      userType: isAluno ? 'student' : 'professor',
+    };
 
-      Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-      
-      router.push('../auth/login');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Erro ao cadastrar usuário. Tente novamente.');
-    }
-  };
+    const response = await api.post('/users', payload);
+
+    clearFields();
+
+    console.log('response:', response);
+
+    Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+    router.push('../auth/login');
+
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Erro', 'Erro ao cadastrar usuário. Tente novamente.');
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

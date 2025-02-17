@@ -30,7 +30,6 @@ export default function HistoryDetailsScreen() {
       : url;
   };
 
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Botão de voltar */}

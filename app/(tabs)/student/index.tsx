@@ -75,18 +75,22 @@ export default function AlunosScreen() {
   };
 
   const renderItem = ({ item }: { item: Aluno }) => (
-    <TouchableOpacity
-      style={styles.alunoItem}
-      onPress={() => goToAlunoChat(item)}
-    >
-      <Ionicons name="person-outline" size={24} color="#6E4F3A" />
-      <View style={{ marginLeft: 10 }}>
-        <Text style={styles.alunoName}>{item.name}</Text>
-        <Text style={styles.alunoProgress}>
-          {item.progress || "Sem progresso"}
-        </Text>
-      </View>
-    </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.alunoItem}
+    onPress={() => goToAlunoChat(item)}
+  >
+    <Ionicons name="person-outline" size={24} color="#6E4F3A" />
+    
+    <View style={{ flex: 1, marginLeft: 10 }}>
+      <Text style={styles.alunoName}>{item.name}</Text> 
+    </View>
+
+    <Ionicons 
+      name="chatbubbles-outline" 
+      size={24}   
+      color="#6E4F3A" 
+    />
+  </TouchableOpacity>
   );
 
   if (loading || loadingData) {
