@@ -1,28 +1,85 @@
-import { Ionicons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
-import React, { useEffect, useState } from "react"
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { api } from "@/lib/axios";
+
 
 type Circuit = {
-  id: string
-  title: string
-  duration: string
-  image: any
-}
+  id: string;
+  name: string;
+  description: string;
+  duration: number;
+  imageURL: string;
+  createdAt: string;
+};
 
-export default function StudentExerciseScreen() {
-  const router = useRouter()
-  const [circuits, setCircuits] = useState<Circuit[]>([])
+export default function TreinoScreen() {
+  const router = useRouter();
+  const [circuits, setCircuits] = useState<Circuit[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockCircuits: Circuit[] = [
-      { id: "1", title: "Circuito Básico", duration: "10 min", image: require("@/assets/images/image_ballet_1.png") },
-      { id: "2", title: "Alongamento", duration: "15 min", image: require("@/assets/images/imagem_materia.png") }
-    ]
-    setCircuits(mockCircuits)
-  }, [])
+    async function fetchCircuits() {
+      try {
+        const response = await api.get("/listCircuits");
 
-  const goBack = () => router.push("../welcome")
+        setCircuits(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar circuitos:", error);
+        Alert.alert("Erro", "Não foi possível carregar os circuitos.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCircuits();
+  }, []);
+
+
+  const getDirectDriveLink = (url: string) => {
+  if (!url.includes("drive.google.com")) return url;
+
+  const match = url.match(/[-\w]{25,}/);
+  return match
+    ? `https://lh3.googleusercontent.com/d/${match[0]}=s220`
+    : url;
+};
+
+  const goBack = () => {
+    router.push("../welcome");
+  };
+
+  const goToCircuitDetail = (circuitId: string) => {
+    router.push({
+    pathname: "/exercise/circuitDetail",
+    params: { circuitId },
+  });
+
+  };
+
+  const renderCircuit = ({ item }: { item: Circuit }) => (
+    <View style={styles.treinoItem}>
+      <Image source={{ uri: getDirectDriveLink(item.imageURL) }} style={styles.treinoImage} />
+      <Text style={styles.treinoTitle}>{item.name}</Text>
+      <Text style={styles.treinoDescription}>{item.description}</Text>
+      <Text style={styles.treinoDuration}>Duração: {item.duration} min</Text>
+      <TouchableOpacity
+        style={styles.startButton}
+        onPress={() => goToCircuitDetail(item.id)}>
+        <Ionicons name="play-circle-outline" size={24} color="#FFF" />
+        <Text style={styles.startButtonText}>Entrar</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -30,38 +87,105 @@ export default function StudentExerciseScreen() {
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <Ionicons name="arrow-back-circle-outline" size={30} color="black" />
         </TouchableOpacity>
-        <Text style={styles.title}>Meus Treinos</Text>
+        <Text style={styles.title}>Treino</Text>
+        <Image
+          source={require("@/assets/images/logo_ballet_world.png")}
+          style={styles.logo}
+        />
       </View>
 
-      <FlatList
-        data={circuits}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.circuitItem}>
-            <Text style={styles.circuitTitle}>{item.title}</Text>
-            <Text style={styles.circuitDuration}>Duração: {item.duration}</Text>
-            <TouchableOpacity
-              style={styles.startButton}
-              onPress={() => router.push(`../exercise/${item.id}/steps`)}
-            >
-              <Ionicons name="play-circle-outline" size={24} color="#FFF" />
-              <Text style={styles.startButtonText}>Entrar</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+      {loading ? (
+        <Text style={styles.loadingText}>Carregando circuitos...</Text>
+      ) : (
+        <FlatList
+          data={circuits}
+          keyExtractor={(item) => item.id}
+          renderItem={renderCircuit}
+          style={styles.list}
+        />
+      )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FDEAE2", padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  backButton: { marginRight: 10 },
-  title: { fontSize: 18, fontWeight: "bold", color: "#6E4F3A" },
-  circuitItem: { backgroundColor: "#EED3C3", padding: 15, borderRadius: 10, marginBottom: 10 },
-  circuitTitle: { fontSize: 16, fontWeight: "bold", color: "#6E4F3A" },
-  circuitDuration: { fontSize: 14, color: "#6E4F3A", marginBottom: 10 },
-  startButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#5C2E2E", padding: 10, borderRadius: 10 },
-  startButtonText: { color: "#FFF", fontWeight: "bold", marginLeft: 5 }
-})
+  container: {
+    flex: 1,
+    backgroundColor: "#FDEAE2",
+    paddingTop: 40,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  backButton: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#6E4F3A",
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+  },
+  list: {
+    paddingHorizontal: 20,
+  },
+  treinoItem: {
+    backgroundColor: "#EED3C3",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  treinoImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  treinoTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#6E4F3A",
+    marginBottom: 5,
+  },
+  treinoDescription: {
+    fontSize: 14,
+    color: "#6E4F3A",
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  treinoDuration: {
+    fontSize: 14,
+    color: "#6E4F3A",
+    marginBottom: 10,
+  },
+  startButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#5C2E2E",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    alignSelf: "flex-start",
+  },
+  startButtonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+    marginLeft: 5,
+  },
+  loadingText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#6E4F3A",
+  },
+});
+
